@@ -1,7 +1,7 @@
 package main
 
 import (
-	"DisasterNet/internal/p2p"
+	"offlineSOS/internal/p2p"
 	"context"
 	"flag"
 	"fmt"
