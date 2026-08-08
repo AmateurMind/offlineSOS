@@ -1,115 +1,123 @@
-import { AlertTriangle, Send } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { AlertTriangle, Radio, Send, ShieldCheck, WifiOff } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 const API = "http://10.203.19.138:3001";
 
 function App() {
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<string[]>([]);
   const [message, setMessage] = useState("");
+  const [isConnected, setIsConnected] = useState(false);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetch(`${API}/messages`)
-        .then((res) => res.json())
-        .then((data) => {
-          console.log(data);
-          setMessages(data);
-        });
-    }, 2000);
-    return () => clearInterval(interval);
+  const loadMessages = useCallback(async () => {
+    try {
+      const response = await fetch(`${API}/messages`);
+      if (!response.ok) throw new Error("Unable to reach network");
+      const data = await response.json();
+      setMessages(Array.isArray(data) ? data : []);
+      setIsConnected(true);
+    } catch {
+      setIsConnected(false);
+    }
   }, []);
 
+  useEffect(() => {
+    loadMessages();
+    const interval = setInterval(loadMessages, 2000);
+    return () => clearInterval(interval);
+  }, [loadMessages]);
+
   const sendMessage = async () => {
-    if (message.trim() === "") return;
+    const trimmedMessage = message.trim();
+    if (!trimmedMessage) return;
 
-    await fetch(`${API}/send`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: message }),
-    });
-    setMessage("");
+    try {
+      await fetch(`${API}/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: trimmedMessage }),
+      });
+      setMessage("");
+      loadMessages();
+    } catch {
+      setIsConnected(false);
+    }
   };
+
   return (
-    <div className="min-h-screen w-full flex flex-col justify-center items-center bg-gradient-to-tr from-violet-950 to-violet-500">
-      <div className="flex flex-col h-[80vh] sm:w-[80vw] lg:w-[60vw]  border-4 border-black rounded-3xl overflow-hidden my-8">
-        <div className="flex h-[10%] bg-red-700">
-          <div className="my-auto ml-4">
-            <AlertTriangle className="text-yellow-400 w-12 h-12" />
+    <main className="app-shell">
+      <div className="ambient-glow" aria-hidden="true" />
+      <section className="console" aria-label="offlineSOS emergency communication console">
+        <header className="console-header">
+          <div className="brand-lockup">
+            <div className="brand-mark" aria-hidden="true">
+              <AlertTriangle size={23} strokeWidth={2.5} />
+            </div>
+            <div>
+              <p className="eyebrow">Local emergency relay</p>
+              <h1>offlineSOS</h1>
+            </div>
           </div>
-          <div className="text-white ml-4 my-2">
-            <p className="text-3xl font-bold">
-              offlineSOS (No Internet Required)
-            </p>
-            <p className="text-md ">Emergency Communication Network</p>
+          <div className={`connection-pill ${isConnected ? "is-online" : ""}`}>
+            <span className="status-dot" />
+            {isConnected ? "Network active" : "Standby mode"}
           </div>
-        </div>
+        </header>
 
-        {/* MESSAGES SECTION */}
-        <div className="h-[80%] bg-slate-700 px-6 py-4 overflow-y-auto space-y-2">
-          {Array.isArray(messages) ? (
-            messages.map((msg, idx) => (
-              <div
-                key={idx}
-                className="text-white bg-slate-800 px-4 py-2 rounded-md"
-              >
-                {msg}
+        <div className="console-body">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Encrypted local channel</p>
+              <h2>Emergency messages</h2>
+            </div>
+            <Radio size={19} aria-hidden="true" />
+          </div>
+
+          <div className="messages" aria-live="polite">
+            {messages.length > 0 ? (
+              messages.map((msg, index) => (
+                <div className="message-card" key={`${msg}-${index}`}>
+                  <span className="message-index">{String(index + 1).padStart(2, "0")}</span>
+                  <p>{msg}</p>
+                </div>
+              ))
+            ) : (
+              <div className="empty-state">
+                <div className="empty-icon"><WifiOff size={21} /></div>
+                <h3>No messages yet</h3>
+                <p>Messages sent by nearby devices will appear here.</p>
               </div>
-            ))
-          ) : (
-            <div className="text-red-400">No messages available</div>
-          )}
+            )}
+          </div>
+
+          <form className="message-composer" onSubmit={(event) => { event.preventDefault(); sendMessage(); }}>
+            <div className="input-wrap">
+              <span className="input-label">Broadcast message</span>
+              <input
+                type="text"
+                placeholder="Share an update with your local network..."
+                value={message}
+                onChange={(event) => setMessage(event.target.value)}
+                aria-label="Broadcast message"
+              />
+            </div>
+            <button type="submit" aria-label="Send broadcast message">
+              <Send size={18} />
+              <span>Send</span>
+            </button>
+          </form>
         </div>
 
-        {/* INPUT SECTION */}
-        <div className="h-[10%] bg-slate-800 flex items-center px-6">
-          <input
-            type="text"
-            placeholder="Type your message here..."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            className="w-full p-2 rounded-lg bg-slate-600 text-white"
-          />
-          <button onClick={sendMessage} className="ml-4">
-            <Send className="text-gray-300 w-8 h-8" />
-          </button>
-        </div>
-      </div>
-      <div className="mt-6 px-4 w-full flex justify-center my-8">
-        <div className="max-w-2xl w-full bg-white/5 backdrop-blur-lg rounded-2xl p-6 shadow-md text-center">
-          <p className="text-xl md:text-2xl font-bold mb-2">
-            Created By -{" "}
-            <a
-              href="https://github.com/AmateurMind"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-400 hover:underline"
-              aria-label="AmateurMind"
-            >
-              Suhail
-            </a>
-          </p>
+        <footer className="console-footer">
+          <div className="footer-note">
+            <ShieldCheck size={17} aria-hidden="true" />
+            <span>Designed to work when the internet doesn’t.</span>
+          </div>
+          <span className="version-tag">OFFLINE / LOCAL ONLY</span>
+        </footer>
+      </section>
 
-          <p className="text-base md:text-lg text-gray-300 mb-4">
-            Frontend part of the <strong>offlineSOS</strong> project — made to
-            communicate in places{" "}
-            <span className="font-semibold text-white">
-              without the NEED OF INTERNET
-            </span>
-            !
-          </p>
-
-          <a
-            href="https://github.com/AmateurMind/offlineSOS"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block text-blue-400 font-medium hover:underline"
-            aria-label="offlineSOS GitHub Repository"
-          >
-            View full project (frontend + backend) on GitHub →
-          </a>
-        </div>
-      </div>
-    </div>
+      <p className="credit">Built for resilient communication · <a href="https://github.com/AmateurMind" target="_blank" rel="noreferrer">Suhail</a></p>
+    </main>
   );
 }
 
