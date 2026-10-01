@@ -161,7 +161,7 @@ func main() {
 	// use the nickname from the cli flag, or a default if blank
 	nick := *nickFlag
 	if len(nick) == 0 {
-		nick = "ABHI"
+		nick = "SUHAIL"
 	}
 
 	room := *roomFlag

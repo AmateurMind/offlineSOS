@@ -73,14 +73,13 @@ Brief explanation about MDNS
 - Eg: Run command
 
 ```console
-    go run main.go --port 9000 --same_string xyz --room myroom --nick Abhi --enable-http true
+    go run main.go --port 9000 --same_string xyz --room myroom --nick Suhail --enable-http true
 ```
 
 - Run command in another terminal/device connceted together via Wifi/Ethernet LAN to create another peer.
 
 ```console
-go run main.go --port 9001 --same_string xyz --room myroom --nick Aaradhya
+go run main.go --port 9001 --same_string xyz --room myroom --nick rescuer
 ```
 
 - Start communicating by sending messages by writing through terminal or though the frontend Ui.
-

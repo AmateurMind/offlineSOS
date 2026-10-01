@@ -1,7 +1,7 @@
 import { AlertTriangle, Radio, Send, ShieldCheck, WifiOff } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
-const API = "http://10.203.19.138:3001";
+const API = "http://localhost:3001";
 
 function App() {
   const [messages, setMessages] = useState<string[]>([]);
@@ -49,16 +49,16 @@ function App() {
       <section className="console" aria-label="offlineSOS emergency communication console">
         <header className="console-header">
           <div className="brand-lockup">
-            <div className="brand-mark" aria-hidden="true">
+            {/* <div className="brand-mark" aria-hidden="true">
               <AlertTriangle size={23} strokeWidth={2.5} />
-            </div>
+            </div> */}
             <div>
               <p className="eyebrow">Local emergency relay</p>
               <h1>offlineSOS</h1>
             </div>
           </div>
           <div className={`connection-pill ${isConnected ? "is-online" : ""}`}>
-            <span className="status-dot" />
+            {/* <span className="status-dot" /> */}
             {isConnected ? "Network active" : "Standby mode"}
           </div>
         </header>
@@ -69,7 +69,7 @@ function App() {
               <p className="eyebrow">Encrypted local channel</p>
               <h2>Emergency messages</h2>
             </div>
-            <Radio size={19} aria-hidden="true" />
+            {/* <Radio size={19} aria-hidden="true" /> */}
           </div>
 
           <div className="messages" aria-live="polite">
@@ -116,7 +116,7 @@ function App() {
         </footer>
       </section>
 
-      <p className="credit">Built for resilient communication · <a href="https://github.com/AmateurMind" target="_blank" rel="noreferrer">Suhail</a></p>
+      {/* <p className="credit">Built for resilient communication · <a href="https://github.com/AmateurMind" target="_blank" rel="noreferrer">Suhail</a></p> */}
     </main>
   );
 }
